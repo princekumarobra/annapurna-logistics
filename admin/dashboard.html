@@ -38,7 +38,7 @@
         </nav>
     </header>
     
-    <button id="logoutButton" class="secondary-button">Logout</button>
+    <!-- Logout button removed from here and moved below the main content -->
     <!-- ======================================= -->
 
     <!-- Title below the header -->
@@ -71,7 +71,6 @@
             <div id="salaryDetails">
                 <!-- Fetched (Full Row) data will be displayed here -->
             </div>
-            <!-- FIX: Two buttons for Download and Print -->
             <button id="downloadPdfButton" class="primary-button">Download Salary Slip PDF</button>
             <button id="printSlipButton" class="secondary-button">Print Salary Slip</button>
         </div>
@@ -80,11 +79,14 @@
         <p class="error-message" id="errorMessage"></p>
 
     </div>
+    
+    <!-- *** LOGOUT BUTTON MOVED HERE: BELOW THE CONTAINER *** -->
+    <button id="logoutButton" class="secondary-button">Logout</button>
+    
 
-    <!-- Hidden Salary Slip Template for PDF/Print Generation -->
+    <!-- Hidden Salary Slip Template ... (वही रहेगा) ... -->
     <div id="slip" class="slip-template hidden">
         <div class="slip-header">
-            <!-- Company Details for Print -->
             <img src="../logo.png" alt="Company Logo" class="slip-logo"> 
             <h1>Annapurna Logistics</h1>
             <h3>Reliable Transport &amp; Manpower Partner</h3>
@@ -124,37 +126,27 @@
 
     <script src="main.js"></script>
     <script>
-        // Attach event listener for Print button
         document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('printSlipButton').addEventListener('click', function() {
                 generatePrint();
             });
-            initDashboard(); // Also initialize main dashboard logic
+            initDashboard(); 
         });
         
-        // --- Browser Print Function ---
         function generatePrint() {
             if (!currentEmployeeData) {
                 showError('No employee data available to print.');
                 return;
             }
-            // Fill slip template
             const month = document.getElementById('sheetName').value;
             fillSlipTemplate(currentEmployeeData, month);
 
             const slipElement = document.getElementById('slip');
             slipElement.classList.remove('hidden');
 
-            // Copy slip content to a new window for clean printing
-            const printContents = slipElement.innerHTML;
-            const originalContents = document.body.innerHTML;
-
-            document.body.innerHTML = printContents;
             window.print();
             
-            // Restore original contents after printing
-            document.body.innerHTML = originalContents;
-            window.location.reload(); // Reload to restore event listeners and UI state
+            slipElement.classList.add('hidden');
         }
     </script>
 </body>
