@@ -50,8 +50,8 @@ body {
 .secondary-button {
     background-color: #6c757d;
     color: white;
-    width: auto; 
-    margin-top: 0; /* Override default margin */
+    width: 100%; 
+    margin-top: 15px; /* Separate from primary button */
 }
 
 .secondary-button:hover {
@@ -73,26 +73,21 @@ body {
 /* --- LOGIN PAGE & DASHBOARD PAGE CONTAINER FIX --- */
 /* ================================================= */
 
-/* Hiding the old class used for centering the card without header */
-.login-body {
-    display: block; 
-}
-
-/* New container for Login Page Card - Centers the card vertically below header */
+/* Login Page Centering */
 .center-login-container {
     display: flex;
     justify-content: center;
     align-items: flex-start; 
-    min-height: calc(100vh - 150px); /* Fill screen below header */
+    min-height: calc(100vh - 150px); 
     padding-top: 50px; 
 }
 
 .login-card {
     max-width: 400px;
-    margin: 0; /* Let center-login-container handle the centering */
+    margin: 0; 
 }
 
-/* New container for Dashboard Cards - Must be flex column on small screens */
+/* Dashboard Cards Layout */
 .container {
     display: flex;
     flex-direction: column;
@@ -101,12 +96,7 @@ body {
     width: 100%;
 }
 
-/* Hide the old simple blue header on dashboard */
-.header {
-    display: none !important; 
-}
-
-/* Style for the logout button on the dashboard (positioned absolutely in the top header area) */
+/* Style for the logout button (positioned absolutely in the top header area) */
 #logoutButton {
     position: absolute;
     top: 15px; 
@@ -117,7 +107,7 @@ body {
     border-radius: 5px;
 }
 
-/* --- Input Group & Form Styles (Same as before) --- */
+/* --- Input Group & Form Styles --- */
 .input-group {
     margin-bottom: 15px;
 }
@@ -139,30 +129,13 @@ body {
     transition: border-color 0.3s;
 }
 
-.input-group input:focus {
-    border-color: var(--primary-color);
-    outline: none;
-}
-
 /* --- Details Display Styles (Result Card) --- */
-#salaryDetails {
-    margin-top: 15px;
-}
-
 .detail-row {
     display: flex;
     justify-content: space-between;
     padding: 8px 0;
     border-bottom: 1px dotted #e0e0e0;
     font-size: 1.05rem;
-}
-
-.detail-row:last-of-type {
-    border-bottom: none;
-}
-
-.detail-row strong {
-    font-weight: 600;
 }
 
 .highlight {
@@ -192,7 +165,7 @@ body {
 }
 
 /* ================================================= */
-/* --- Salary Slip Template (Hidden) Styles for PDF --- */
+/* --- Salary Slip Template (Hidden) Styles for PDF/PRINT --- */
 /* ================================================= */
 .slip-template {
     width: 210mm; 
@@ -251,12 +224,6 @@ body {
     border-bottom: 1px dashed #ccc;
 }
 
-.slip-details hr {
-    margin: 10px 0;
-    border: 0;
-    border-top: 1px solid #333;
-}
-
 .slip-details h2 {
     font-size: 18pt;
     text-align: center;
@@ -266,20 +233,24 @@ body {
     display: block;
 }
 
-.slip-footer {
-    text-align: right;
-    margin-top: 40px; 
-    font-size: 10pt;
+/* --- Media Query for Print (Hides non-slip elements for clean print) --- */
+@media print {
+    body > :not(.slip-template) {
+        display: none !important;
+    }
+    .slip-template {
+        display: block !important;
+        position: absolute;
+        left: 0;
+        top: 0;
+        margin: 0;
+        border: none;
+        box-shadow: none;
+    }
 }
-
-.slip-footer p:first-child {
-    margin-bottom: 0;
-}
-
 
 /* --- Desktop/Tablet Layout (Responsiveness) --- */
 @media (min-width: 768px) {
-    /* Dashboard Cards Layout */
     .container {
         flex-direction: row;
         justify-content: center;
@@ -294,16 +265,10 @@ body {
         max-width: 450px;
     }
     
-    /* Logout button positioning fix for desktop (outside the content flow) */
     #logoutButton {
         position: absolute;
         top: 20px;
         right: 20px;
-        padding: 8px 15px; /* Adjust size for desktop */
-    }
-    
-    /* Hide the main site's responsive menu toggle on desktop */
-    .main-nav .nav-toggle {
-        display: none !important;
+        padding: 8px 15px; 
     }
 }
