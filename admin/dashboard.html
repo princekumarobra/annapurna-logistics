@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Salary Slip Generator</title>
+    <!-- Note: Linking to the main style.css one level up (../style.css) -->
+    <link rel="stylesheet" href="../style.css">
+    <!-- ALSO link to the admin style.css for login/dashboard card styling -->
+    <link rel="stylesheet" href="style.css">
+    <!-- jsPDF and html2canvas CDNs for PDF generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+
+    <!-- ======================================= -->
+    <!-- ========== TOP HEADER (Copied from index.html) ========== -->
+    <header class="site-header">
+        <div class="top-bar">
+            <div class="top-logo-left">
+                <img src="../logo.png" alt="Annapurna Logistics Logo" class="logo-left-img" /> 
+            </div>
+            <div class="brand">
+                <div class="brand-text">
+                    <h1 class="brand-name">ANNAPURNA LOGISTICS</h1>
+                    <p class="brand-tagline">Reliable Transport &amp; Manpower Partner</p>
+                </div>
+            </div>
+            <div class="top-contact">
+                <a href="tel:07667079711" class="top-phone blink-phone">
+                    📞 07667 079711
+                </a>
+                <a href="tel:9122440600" class="top-phone blink-phone">
+                    📞 91224 40600
+                </a>
+            </div>
+        </div>
+        
+        <nav class="main-nav">
+            <ul class="nav-links">
+                <li><a href="#">Admin Dashboard</a></li>
+            </ul>
+        </nav>
+        
+    </header>
+    
+    <button id="logoutButton" class="secondary-button">Logout</button>
+    <!-- ======================================= -->
+
+    <!-- Title below the header -->
+    <div class="content-section">
+        <h2>Salary Slip Generator</h2>
+    </div>
+
+    <div class="container">
+        <!-- Search and Input Card -->
+        <div class="card search-card">
+            <h2>Employee Search</h2>
+            <div class="input-group">
+                <label for="sheetId">Google Sheet ID:</label>
+                <!-- *** Sheet ID set to the last confirmed ID: 1jCx_xflDltZB2YPWddp3nW0ZKIkrupr0hqXkuDo41lU *** -->
+                <input type="text" id="sheetId" value="1jCx_xflDltZB2YPWddp3nW0ZKIkrupr0hqXkuDo41lU" readonly>
+            </div>
+            <div class="input-group">
+                <label for="sheetName">Sheet Name (Month):</label>
+                <input type="text" id="sheetName" value="May" placeholder="e.g., May or October 2025">
+            </div>
+            <div class="input-group">
+                <label for="employeeId">Employee ID (e.g., JJT15):</label>
+                <input type="text" id="employeeId" placeholder="Enter Emp ID">
+            </div>
+            <button id="searchButton" class="primary-button">Search Employee</button>
+        </div>
+
+        <!-- Result Card -->
+        <div class="card result-card hidden" id="resultCard">
+            <h2>Salary Details</h2>
+            <div id="salaryDetails">
+                <!-- Fetched data (Full Row Data) will be displayed here -->
+            </div>
+            <button id="downloadPdfButton" class="primary-button">Download Salary Slip PDF</button>
+        </div>
+        
+        <!-- Error Message -->
+        <p class="error-message" id="errorMessage"></p>
+
+    </div>
+
+    <!-- Hidden Salary Slip Template for PDF Generation -->
+    <div id="slip" class="slip-template hidden">
+        <div class="slip-header">
+            <img src="../logo.png" alt="Company Logo" class="slip-logo"> 
+            <h1>Annapurna Logistics</h1>
+            <h3>Salary Slip for <span id="slip-month"></span></h3>
+            <hr>
+        </div>
+        <div class="slip-details">
+            <p><strong>Employee ID:</strong> <span id="slip-empid"></span></p>
+            <p><strong>Employee Name:</strong> <span id="slip-name"></span></p>
+            <p><strong>Bank Account:</strong> <span id="slip-bank"></span></p>
+            <hr>
+            
+            <!-- Earnings Section -->
+            <p class="slip-heading">** EARNINGS **</p>
+            <p><strong>Rate Per Day:</strong> <span id="slip-rate"></span></p>
+            <p><strong>Present Days:</strong> <span id="slip-present"></span></p>
+            <p><strong>Absent Days:</strong> <span id="slip-absent"></span></p>
+            <p><strong>GROSS PAY:</strong> ₹ <span id="slip-gross-pay"></span></p>
+            <hr>
+
+            <!-- Deductions Section -->
+            <p class="slip-heading">** DEDUCTIONS **</p>
+            <p><strong>PF (12%):</strong> ₹ <span id="slip-pf-deduction"></span></p>
+            <p><strong>ESI (0.75%):</strong> ₹ <span id="slip-esi-deduction"></span></p>
+            <hr>
+
+            <!-- Net Pay Section -->
+            <h2>NET PAY: ₹ <span id="slip-netpay"></span></h2>
+        </div>
+        <div class="slip-footer">
+            <br><br>
+            <p>_________________________</p>
+            <p>Authorized Signature</p>
+        </div>
+    </div>
+
+    <script src="main.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', initDashboard);
+
+        document.addEventListener("DOMContentLoaded", function () {
+            const toggle = document.querySelector(".nav-toggle");
+            const nav = document.querySelector(".main-nav");
+
+            if (toggle && nav) {
+                toggle.addEventListener("click", function () {
+                    nav.classList.toggle("open");
+                });
+            }
+        });
+    </script>
+</body>
+</html>
