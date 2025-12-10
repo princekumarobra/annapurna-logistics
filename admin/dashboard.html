@@ -1,153 +1,181 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>Admin Dashboard - Salary Slip Generator</title>
-    <!-- Link to Main and Admin CSS -->
+
+    <!-- Global site CSS (replace path if आपका CSS अलग है) -->
     <link rel="stylesheet" href="../style.css">
+    <!-- Optional admin specific styling -->
     <link rel="stylesheet" href="style.css">
-    <!-- jsPDF and html2canvas CDNs for PDF generation -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <!-- PDF libs (required) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
+
+    <style>
+        /* Minimal local styles to ensure layout works on mobile */
+        :root{--card-bg:#fff;--accent:#1877f2;--muted:#666}
+        body{font-family: Arial, Helvetica, sans-serif; margin:0; background:#f5f7fb; color:#222}
+        .site-header{background:linear-gradient(90deg,#f97316,#ef4444); color:#fff; padding:12px 16px; display:flex; align-items:center; gap:12px}
+        .site-header img.logo-left-img{height:40px; border-radius:6px}
+        .brand-name{margin:0;font-size:16px}
+        .brand-tagline{margin:0;font-size:11px;opacity:0.9}
+        .top-contact{margin-left:auto; font-size:13px}
+        .container{max-width:920px;margin:20px auto;padding:0 12px}
+        .card{background:var(--card-bg); border-radius:12px; box-shadow:0 6px 18px rgba(0,0,0,.06); padding:18px; margin-bottom:18px}
+        h2{margin:0 0 12px 0; font-size:18px}
+        .input-group{margin-bottom:12px}
+        label{display:block;font-size:13px;color:var(--muted); margin-bottom:6px}
+        input[type="text"], input[type="password"]{width:100%; padding:10px 12px; border-radius:8px; border:1px solid #e2e8f0; box-sizing:border-box; font-size:14px}
+        .primary-button{background:var(--accent); color:#fff; padding:10px 14px; border:none; border-radius:8px; cursor:pointer; width:100%; font-size:15px}
+        .secondary-button{background:#e6eefc; color:#123; padding:8px 12px; border-radius:8px; border:1px solid #dbeafe; cursor:pointer}
+        .hidden{display:none !important}
+        .error-message{color:#c53030; margin-top:6px; display:none}
+        #salaryDetails{font-size:14px; color:#111}
+        .slip-template{width:800px; max-width:800px; background:#fff; padding:18px; border-radius:6px}
+        .slip-logo{height:60px}
+        /* responsive */
+        @media(max-width:720px){
+            .slip-template{width:320px; max-width:92%}
+            .site-header{flex-wrap:wrap}
+            .brand-name{font-size:15px}
+        }
+    </style>
 </head>
 <body>
 
-    <!-- ======================================= -->
-    <!-- TOP HEADER (For consistent look) -->
-    <header class="site-header">
-        <div class="top-bar">
-            <div class="top-logo-left">
-                <img src="../logo.png" alt="Company Logo" class="logo-left-img" /> 
-            </div>
-            <div class="brand">
-                <div class="brand-text">
-                    <h1 class="brand-name">ANNAPURNA LOGISTICS</h1>
-                    <p class="brand-tagline">Reliable Transport &amp; Manpower Partner</p>
-                </div>
-            </div>
-            <div class="top-contact">
-                <a href="tel:07667079711" class="top-phone blink-phone">📞 07667 079711</a>
-                <a href="tel:9122440600" class="top-phone blink-phone">📞 91224 40600</a>
-            </div>
+    <!-- Header -->
+    <header class="site-header" role="banner">
+        <img src="../logo.png" alt="Company Logo" class="logo-left-img" />
+        <div style="line-height:1">
+            <div class="brand-name">ANNAPURNA LOGISTICS</div>
+            <div class="brand-tagline">Reliable Transport &amp; Manpower Partner</div>
         </div>
-        <nav class="main-nav">
-            <ul class="nav-links">
-                <li><a href="#">Admin Dashboard</a></li>
-            </ul>
-        </nav>
+        <div class="top-contact" aria-hidden="true">📞 07667 079711 &nbsp; 📞 91224 40600</div>
     </header>
-    
-    <!-- Logout button removed from here and moved below the main content -->
-    <!-- ======================================= -->
 
-    <!-- Title below the header -->
-    <div class="content-section">
-        <h2>Salary Slip Generator</h2>
-    </div>
+    <!-- Page content -->
+    <main class="container" role="main">
+        <div class="card">
+            <h2>Admin Panel → Employee Salary Lookup</h2>
 
-    <div class="container">
-        <!-- Search and Input Card -->
-        <div class="card search-card">
-            <h2>Employee Search</h2>
             <div class="input-group">
-                <label for="sheetId">Google Sheet ID:</label>
-                <input type="text" id="sheetId" value="1jCx_xflDltZB2YPWddp3nW0ZKIkrupr0hqXkuDo41lU" readonly>
+                <label for="sheetId">Google Sheet ID (readonly)</label>
+                <input id="sheetId" type="text" value="1jCx_xflDltZB2YPWddp3nW0ZKIkrupr0hqXkuDo41lU" readonly>
             </div>
+
             <div class="input-group">
-                <label for="sheetName">Sheet Name (Month):</label>
-                <input type="text" id="sheetName" value="May" placeholder="e.g., May or October 2025">
+                <label for="sheetName">Sheet Name (Month)</label>
+                <input id="sheetName" type="text" placeholder="e.g., May" value="May">
             </div>
+
             <div class="input-group">
-                <label for="employeeId">Employee ID (e.g., JJT15):</label>
-                <input type="text" id="employeeId" placeholder="Enter Emp ID">
+                <label for="employeeId">Employee ID (e.g., JJT15)</label>
+                <input id="employeeId" type="text" placeholder="Enter Emp ID">
             </div>
+
             <button id="searchButton" class="primary-button">Search Employee</button>
+
+            <p id="errorMessage" class="error-message"></p>
         </div>
 
-        <!-- Result Card -->
-        <div class="card result-card hidden" id="resultCard">
-            <h2>Salary Details</h2>
-            <div id="salaryDetails">
-                <!-- Fetched (Full Row) data will be displayed here -->
+        <!-- Result Card (hidden until search) -->
+        <div id="resultCard" class="card hidden">
+            <h2>Salary Details (Preview)</h2>
+            <div id="salaryDetails"> <!-- Filled by JS --> </div>
+
+            <div style="display:flex; gap:10px; margin-top:12px; flex-wrap:wrap">
+                <button id="downloadPdfButton" class="primary-button" style="flex:1">Download Salary Slip PDF</button>
+                <button id="printSlipButton" class="secondary-button" style="flex:1">Print Salary Slip</button>
             </div>
-            <button id="downloadPdfButton" class="primary-button">Download Salary Slip PDF</button>
-            <button id="printSlipButton" class="secondary-button">Print Salary Slip</button>
         </div>
-        
-        <!-- Error Message -->
-        <p class="error-message" id="errorMessage"></p>
 
-    </div>
-    
-    <!-- *** LOGOUT BUTTON MOVED HERE: BELOW THE CONTAINER *** -->
-    <button id="logoutButton" class="secondary-button">Logout</button>
-    
+        <!-- Logout button -->
+        <div style="text-align:right; margin-top:6px">
+            <button id="logoutButton" class="secondary-button">Logout</button>
+        </div>
 
-    <!-- Hidden Salary Slip Template ... (वही रहेगा) ... -->
-    <div id="slip" class="slip-template hidden">
-        <div class="slip-header">
-            <img src="../logo.png" alt="Company Logo" class="slip-logo"> 
-            <h1>Annapurna Logistics</h1>
-            <h3>Reliable Transport &amp; Manpower Partner</h3>
-            <p style="font-size: 10pt; margin-top: 5px;">Contact: 07667 079711, 91224 40600</p>
-            <h3>Salary Slip for <span id="slip-month"></span></h3>
+        <hr style="margin:22px 0">
+
+        <p style="font-size:13px; color:#555">
+            Notes:
+            <ul style="margin:6px 0 0 18px">
+                <li>Sheet must be shared as: <strong>Anyone with the link → Viewer</strong></li>
+                <li>Column order expected: <strong>A:Emp ID, B:Name, C:Bank Account, D:Rate/Day, E:Days in Month, F:Present, G:Absent, H:Net Pay</strong></li>
+                <li>Use Admin Login page to access this dashboard (credentials stored in admin login script)</li>
+            </ul>
+        </p>
+    </main>
+
+    <!-- Hidden Salary Slip Template (filled by JS then exported) -->
+    <div id="slip" class="slip-template hidden" aria-hidden="true" style="position:fixed; left:20000px; top:20000px;">
+        <div style="text-align:center; margin-bottom:8px">
+            <img src="../logo.png" alt="Company Logo" class="slip-logo">
+            <h1 style="margin:6px 0 2px 0;">Annapurna Logistics</h1>
+            <div style="font-size:12px; color:#333;">Reliable Transport &amp; Manpower Partner</div>
+            <div style="font-size:11px; color:#444; margin-top:6px">Contact: 07667 079711 • 91224 40600</div>
+            <h3 style="margin-top:12px;">Salary Slip for <span id="slip-month"></span></h3>
             <hr>
         </div>
-        <div class="slip-details">
+
+        <div style="font-size:14px; color:#222; padding:6px 0;">
             <p><strong>Employee ID:</strong> <span id="slip-empid"></span></p>
             <p><strong>Employee Name:</strong> <span id="slip-name"></span></p>
             <p><strong>Bank Account:</strong> <span id="slip-bank"></span></p>
             <hr>
-            
-            <!-- Earnings Section -->
-            <p class="slip-heading">** EARNINGS **</p>
-            <p><strong>Rate Per Day:</strong> <span id="slip-rate"></span></p>
-            <p><strong>Present Days:</strong> <span id="slip-present"></span></p>
-            <p><strong>Absent Days:</strong> <span id="slip-absent"></span></p>
-            <p><strong>GROSS PAY:</strong> ₹ <span id="slip-gross-pay"></span></p>
+            <div style="display:flex; gap:12px; flex-wrap:wrap;">
+                <div style="flex:1">
+                    <p><strong>Rate Per Day:</strong> <span id="slip-rate"></span></p>
+                    <p><strong>Present Days:</strong> <span id="slip-present"></span></p>
+                    <p><strong>Absent Days:</strong> <span id="slip-absent"></span></p>
+                </div>
+                <div style="flex:1">
+                    <p><strong>GROSS PAY:</strong> ₹ <span id="slip-gross-pay"></span></p>
+                    <p><strong>PF (12%):</strong> ₹ <span id="slip-pf-deduction"></span></p>
+                    <p><strong>ESI (0.75%):</strong> ₹ <span id="slip-esi-deduction"></span></p>
+                </div>
+            </div>
             <hr>
-
-            <!-- Deductions Section -->
-            <p class="slip-heading">** DEDUCTIONS **</p>
-            <p><strong>PF (12%):</strong> ₹ <span id="slip-pf-deduction"></span></p>
-            <p><strong>ESI (0.75%):</strong> ₹ <span id="slip-esi-deduction"></span></p>
-            <hr>
-
-            <!-- Net Pay Section -->
-            <h2>NET PAY: ₹ <span id="slip-netpay"></span></h2>
+            <h2 style="text-align:center; margin:8px 0;">NET PAY: ₹ <span id="slip-netpay"></span></h2>
         </div>
-        <div class="slip-footer">
-            <br><br>
-            <p>_________________________</p>
-            <p>Authorized Signature</p>
+
+        <div style="margin-top:18px; text-align:right; padding-right:6px;">
+            <div style="display:inline-block; text-align:center;">
+                <div style="height:50px;"></div>
+                <div>_________________________</div>
+                <div>Authorized Signature</div>
+            </div>
         </div>
     </div>
 
-    <script src="main.js"></script>
+    <!-- App JS (must be placed after slip template & elements) -->
+    <script src="main.js" defer></script>
+
+    <!-- Small init for print button (main.js also attaches listeners on DOMContentLoaded) -->
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            document.getElementById('printSlipButton').addEventListener('click', function() {
-                generatePrint();
-            });
-            initDashboard(); 
-        });
-        
-        function generatePrint() {
-            if (!currentEmployeeData) {
-                showError('No employee data available to print.');
-                return;
+        document.addEventListener('DOMContentLoaded', () => {
+            const printBtn = document.getElementById('printSlipButton');
+            if (printBtn) {
+                printBtn.addEventListener('click', () => {
+                    // main.js provides generatePrint via window scope (if present)
+                    if (typeof generatePrint === 'function') {
+                        generatePrint();
+                    } else {
+                        // fallback simple print of slip
+                        const slip = document.getElementById('slip');
+                        if (!slip) return alert('Slip not ready');
+                        slip.classList.remove('hidden');
+                        slip.style.position = 'static';
+                        window.print();
+                        slip.classList.add('hidden');
+                        slip.style.position = 'fixed';
+                    }
+                });
             }
-            const month = document.getElementById('sheetName').value;
-            fillSlipTemplate(currentEmployeeData, month);
-
-            const slipElement = document.getElementById('slip');
-            slipElement.classList.remove('hidden');
-
-            window.print();
-            
-            slipElement.classList.add('hidden');
-        }
+        });
     </script>
+
 </body>
 </html>
