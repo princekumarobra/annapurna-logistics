@@ -1,14 +1,16 @@
+// --- main.js (fixed) ---
+
 // --- Global Constants ---
 const LOGIN_STATE_KEY = 'adminLoggedIn';
 const DASHBOARD_URL = 'dashboard.html';
 const LOGIN_URL = 'login.html';
 
-// --- Login Page Logic ---
+// --- Login Page Logic (unchanged) ---
 function login() {
     const usernameInput = document.getElementById('username').value;
     const passwordInput = document.getElementById('password').value;
 
-    // HARDCODED CREDENTIALS
+    // HARDCODED CREDENTIALS (use your real ones)
     const correctUsername = "shivam";
     const correctPassword = "shivam@12345";
 
@@ -32,6 +34,15 @@ function logout() {
     window.location.href = LOGIN_URL;
 }
 
+// --- small utility to show errors ---
+function showError(msg) {
+    console.log('showError:', msg);
+    const el = document.getElementById('errorMessage') || document.getElementById('messageBox');
+    if (!el) return;
+    el.style.display = msg ? 'block' : 'none';
+    el.textContent = msg || '';
+}
+
 // --- Dashboard Page Logic ---
 let currentEmployeeData = null;
 let columnLabels = {}; 
@@ -39,72 +50,95 @@ let columnLabels = {};
 function initDashboard() {
     if (window.location.pathname.includes(DASHBOARD_URL)) {
         checkLoginStatus(); 
-        document.getElementById('searchButton').addEventListener('click', searchEmployee);
-        document.getElementById('downloadPdfButton').addEventListener('click', generatePDF);
-        document.getElementById('logoutButton').addEventListener('click', logout);
+        // safe attach (only if exists)
+        const sbtn = document.getElementById('searchButton');
+        if (sbtn) sbtn.addEventListener('click', searchEmployee);
+        const downloadBtn = document.getElementById('downloadPdfButton');
+        if (downloadBtn) downloadBtn.addEventListener('click', generatePDF);
+        const logoutBtn = document.getElementById('logoutButton');
+        if (logoutBtn) logoutBtn.addEventListener('click', logout);
+
+        // initial UI hide
+        const res = document.getElementById('resultCard');
+        if (res) { res.classList.add('hidden'); res.style.display = 'none'; }
+        showError('');
+        console.log('Dashboard initialized');
     }
 }
 
+/**
+ * Robust fetch for GViz JSON wrapper.
+ */
 async function fetchGviz(sheetId, sheetName) {
-    const trimmedSheetName = sheetName.trim(); 
-    const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=${trimmedSheetName}`;
+    const trimmedSheetName = sheetName.trim();
+    const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(trimmedSheetName)}`;
     showError('');
+    console.log('Fetching GViz URL:', url);
 
     try {
-        const response = await fetch(url);
+        const response = await fetch(url, { method: 'GET', mode: 'cors' });
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-        
         const text = await response.text();
-        
-        const jsonMatch = text.match(/google\.visualization\.Query\.setResponse\(([\s\S]*)\);/);
 
-        if (!jsonMatch || jsonMatch.length < 2) {
-            showError('Invalid GVIZ response format. Is the sheet ID and name correct?');
+        // google returns something like: /*O_o*/\ngoogle.visualization.Query.setResponse({...});
+        // Make regex a bit more tolerant:
+        const regex = /google\.visualization\.Query\.setResponse\(([\s\S]*?)\);?/;
+        const match = text.match(regex);
+        let payload = null;
+        if (match && match[1]) {
+            payload = JSON.parse(match[1]);
+        } else {
+            // Sometimes response is plain JSON already
+            try {
+                payload = JSON.parse(text);
+            } catch (e) {
+                showError('Invalid GVIZ response format. Is the sheet ID and sheet name correct & sheet shared as "Anyone with link - Viewer"?');
+                console.error('GViz parse failed, raw text:', text.slice(0,400));
+                return null;
+            }
+        }
+
+        if (!payload || !payload.table) {
+            showError('GViz returned no table data. Check sheet name and sharing.');
+            console.error('Payload:', payload);
             return null;
         }
 
-        const data = JSON.parse(jsonMatch[1]);
-        
-        if (data.status === 'error') {
-            showError(`Sheet Data Error: ${data.errors[0].message}. Ensure sheet is public or link-shared.`);
+        if (payload.status === 'error') {
+            showError(`Sheet Data Error: ${payload.errors?.[0]?.message || 'Unknown error'}`);
             return null;
         }
-        return data.table;
+
+        return payload.table;
     } catch (error) {
         console.error('Fetch GVIZ error:', error);
-        showError('Network Error or Sheet not Public/Readable. Check console for details.');
+        showError('Network Error or Sheet not Public/Readable. Check sheet sharing (Anyone with link → Viewer).');
         return null;
     }
 }
 
 /**
- * Parses the GVIZ table data. FIX: Always checks Column A (index 0) for Emp ID.
+ * Parses the GVIZ table data and finds the row where column A (index 0) equals given empId.
  */
 function matchRowByEmpId(empId, tableData) {
     if (!tableData || !tableData.rows || !tableData.cols) return null;
 
-    const targetEmpId = empId.toUpperCase().trim().replace(/\s/g, ''); 
+    const targetEmpId = String(empId).toUpperCase().trim().replace(/\s/g, '');
     let rowMatch = null;
 
-    // 1. Get Column Labels (A, B, C, D, ...)
+    // Build columnLabels: index -> header (or fallback letter)
     columnLabels = {};
     tableData.cols.forEach((col, index) => {
-        const colLetter = String.fromCharCode(65 + index); 
-        columnLabels[index] = col.label || colLetter; 
+        const colLetter = String.fromCharCode(65 + index);
+        columnLabels[index] = (col && col.label) ? col.label : colLetter;
     });
+    console.log('columnLabels:', columnLabels);
 
-    // 2. Find the Row matching Emp ID (HARDCODED to index 0 / Column A)
     for (const row of tableData.rows) {
-        const empIdCell = row.c[0]; 
-        
-        let currentEmpId = empIdCell?.f || empIdCell?.v; 
-        
-        if (currentEmpId !== null && currentEmpId !== undefined) {
-            currentEmpId = String(currentEmpId).toUpperCase().trim().replace(/\s/g, '');
-        } else {
-            currentEmpId = 'N/A';
-        }
-
+        const empCell = row.c && row.c[0];
+        let currentEmpId = empCell?.f ?? empCell?.v ?? null;
+        if (currentEmpId === null || currentEmpId === undefined) continue;
+        currentEmpId = String(currentEmpId).toUpperCase().trim().replace(/\s/g, '');
         if (currentEmpId === targetEmpId) {
             rowMatch = row;
             break;
@@ -113,17 +147,14 @@ function matchRowByEmpId(empId, tableData) {
 
     if (!rowMatch) return null;
 
-    // 3. Extract ALL column data for the matched row
+    // Convert row to key:value where key = columnLabels[index]
     const rowData = {};
     rowMatch.c.forEach((cell, index) => {
         let value = cell?.f ?? cell?.v ?? 'N/A';
-        
-        if (value === null || value === undefined || (typeof value === 'string' && value.trim() === '')) {
-            value = 'N/A';
-        } else if (typeof value === 'number') {
+        if (value === null || value === undefined || (typeof value === 'string' && value.trim() === '')) value = 'N/A';
+        if (typeof value === 'number') {
             value = value.toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
         }
-        
         rowData[columnLabels[index]] = value;
     });
 
@@ -131,174 +162,154 @@ function matchRowByEmpId(empId, tableData) {
 }
 
 async function searchEmployee() {
-    const sheetId = document.getElementById('sheetId').value;
-    const sheetName = document.getElementById('sheetName').value;
-    const employeeId = document.getElementById('employeeId').value;
-    
-    document.getElementById('resultCard').classList.add('hidden');
-    currentEmployeeData = null;
+    const sheetIdEl = document.getElementById('sheetId');
+    const sheetNameEl = document.getElementById('sheetName');
+    const empIdEl = document.getElementById('employeeId');
 
-    if (!employeeId) {
-        showError('Please enter an Employee ID.');
+    if (!sheetIdEl || !sheetNameEl || !empIdEl) {
+        showError('Missing input fields in HTML. Check element IDs (sheetId, sheetName, employeeId).');
         return;
     }
-    
-    if (!sheetName) {
-        showError('Please enter the Sheet Name (Month).');
-        return;
-    }
+
+    const sheetId = sheetIdEl.value.trim();
+    const sheetName = sheetNameEl.value.trim();
+    const employeeId = empIdEl.value.trim();
+
+    // reset UI
+    const resultCard = document.getElementById('resultCard');
+    if (resultCard) { resultCard.classList.add('hidden'); resultCard.style.display = 'none'; }
+    currentEmployeeData = null;
+    showError('');
+
+    if (!employeeId) { showError('Please enter an Employee ID.'); return; }
+    if (!sheetName) { showError('Please enter the Sheet Name (Month).'); return; }
+    if (!sheetId) { showError('Please provide the Google Sheet ID.'); return; }
 
     const tableData = await fetchGviz(sheetId, sheetName);
+    if (!tableData) return;
 
-    if (tableData) {
-        const employeeData = matchRowByEmpId(employeeId, tableData);
-        
-        if (employeeData) {
-            currentEmployeeData = employeeData;
-            displayResults(employeeData, sheetName, true); // Show full data
-        } else {
-            showError(`Employee ID '${employeeId}' not found in Column A of the sheet '${sheetName}'. Please check the ID and Sheet Name.`);
-        }
+    const employeeData = matchRowByEmpId(employeeId, tableData);
+    if (!employeeData) {
+        showError(`Employee ID '${employeeId}' not found in Column A of sheet '${sheetName}'.`);
+        return;
     }
+
+    currentEmployeeData = employeeData;
+    displayResults(employeeData, sheetName);
 }
 
 /**
- * Displays the fetched employee data on the dashboard UI card. (Now shows Full Data)
+ * Display full row for verification and show the result card.
  */
-function displayResults(data, month, showFullData = false) {
+function displayResults(data, month) {
     const detailsDiv = document.getElementById('salaryDetails');
     const resultCard = document.getElementById('resultCard');
-    
-    let html = '';
+    if (!detailsDiv || !resultCard) { showError('Result container missing'); return; }
 
-    // --- DISPLAY FULL ROW DATA (For verification) ---
-    html += `<h3 style="text-align:center; margin-bottom:10px;">Full Row Data (For Verification)</h3>`;
-    
-    const sortedKeys = Object.keys(data).sort((a, b) => {
-        const indexA = Object.keys(columnLabels).find(key => columnLabels[key] === a);
-        const indexB = Object.keys(columnLabels).find(key => columnLabels[key] === b);
-        return parseInt(indexA) - parseInt(indexB);
-    });
+    let html = `<h3 style="text-align:center;margin-bottom:10px;">Full Row Data (for verification)</h3>`;
+    html += `<div style="font-size:13px;color:#444">Found columns: ${Object.values(columnLabels).join(', ')}</div><hr>`;
 
-    sortedKeys.forEach((key, index) => {
-        const colLetter = String.fromCharCode(65 + parseInt(Object.keys(columnLabels).find(k => columnLabels[k] === key)));
-        const value = data[key];
-        
-        const isNetPay = colLetter === 'L'; 
-        const isGross = colLetter === 'H';
-        const rowClass = isNetPay ? 'highlight' : (isGross ? 'highlight-sub' : '');
-        
-        html += `
-            <div class="detail-row ${rowClass}">
-                <strong>${colLetter} - ${key}:</strong> 
-                <span>${value}</span>
-            </div>
-        `;
-        if (colLetter === 'C') html += `<hr style="margin: 10px 0;">`; // Separator after Bank Account
-    });
-    
-    html += `<h3 style="text-align:center; margin-top:15px; color:#dc3545;">(To Print PDF, press Download button below.)</h3>`;
-    
+    // show each column in order
+    for (let i = 0; i < Object.keys(columnLabels).length; i++) {
+        const header = columnLabels[i] || String.fromCharCode(65 + i);
+        const value = data[header] ?? 'N/A';
+        const colLetter = String.fromCharCode(65 + i);
+        html += `<div style="padding:6px 0;"><strong>${colLetter} - ${header}:</strong> ${value}</div>`;
+    }
+
+    html += `<div style="margin-top:12px;text-align:center;color:#2b6cb0">(Click Download Salary Slip to export PDF)</div>`;
+
     detailsDiv.innerHTML = html;
     resultCard.classList.remove('hidden');
+    resultCard.style.display = 'block';
     showError('');
 }
 
-// Function to safely get and format values for the PDF slip
-const safeGet = (data, key) => {
-    let value = data[key];
-    if (value === undefined || value === null || value === 'N/A') return 'N/A';
-    
-    if (key.includes('Pay') || key.includes('Salary') || key.includes('Deduction')) {
-        const num = parseFloat(String(value).replace(/[^\d\.]/g, ''));
-        return isNaN(num) ? String(value).trim() : num.toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+/**
+ * Safe getter/formatter
+ */
+const safeGet = (data, idxOrKey) => {
+    if (!data) return 'N/A';
+    // accept either index (number) or header name
+    if (typeof idxOrKey === 'number') {
+        const header = columnLabels[idxOrKey];
+        return (data[header] === undefined || data[header] === null) ? 'N/A' : String(data[header]);
     }
-    
-    return String(value).trim();
+    const val = data[idxOrKey];
+    return (val === undefined || val === null) ? 'N/A' : String(val);
 };
 
-
-/**
- * Fills the hidden salary slip template with current data before PDF generation.
- */
 function fillSlipTemplate(data, month) {
-    // Column Headers based on the latest sheet data: 
-    const empIdKey = columnLabels[0]; 
-    const nameKey = columnLabels[1]; 
-    const bankAcKey = columnLabels[4]; 
-    const rateKey = 'Rate Per Day';
-    const presentKey = 'Present Days';
-    const absentKey = 'Absent Days';
-    const grossKey = 'Gross Salary';
-    const pfKey = 'PF on Basic (12.%)';
-    const esiKey = 'ESI On Gross (0.75%)';
-    const netPayKey = 'Net Pay'; 
-    
-    document.getElementById('slip-month').textContent = month;
-    document.getElementById('slip-empid').textContent = safeGet(data, empIdKey);
-    document.getElementById('slip-name').textContent = safeGet(data, nameKey);
-    document.getElementById('slip-bank').textContent = safeGet(data, bankAcKey);
-    
-    // Fill Earnings
-    document.getElementById('slip-rate').textContent = safeGet(data, rateKey);
-    document.getElementById('slip-present').textContent = safeGet(data, presentKey);
-    document.getElementById('slip-absent').textContent = safeGet(data, absentKey);
-    document.getElementById('slip-gross-pay').textContent = safeGet(data, grossKey);
-    
-    // Fill Deductions
-    document.getElementById('slip-pf-deduction').textContent = safeGet(data, pfKey);
-    document.getElementById('slip-esi-deduction').textContent = safeGet(data, esiKey);
-    
-    // Fill Net Pay
-    document.getElementById('slip-netpay').textContent = safeGet(data, netPayKey);
+    // Use expected index mapping (A..H)
+    // A: Emp ID (0), B: Name (1), C: Bank Account (2), D: Rate/Day (3)
+    // E: Days in Month (4), F: Present(5), G: Absent(6), H: Net Pay(7)
+    document.getElementById('slip-month').textContent = month || '';
+
+    document.getElementById('slip-empid').textContent = safeGet(data, 0);
+    document.getElementById('slip-name').textContent = safeGet(data, 1);
+    document.getElementById('slip-bank').textContent = safeGet(data, 2);
+
+    document.getElementById('slip-rate').textContent = safeGet(data, 3);
+    document.getElementById('slip-present').textContent = safeGet(data, 5);
+    document.getElementById('slip-absent').textContent = safeGet(data, 6);
+    document.getElementById('slip-gross-pay').textContent = safeGet(data, 7); // if gross in H or adjust
+
+    // Deductions (if present in different columns change indices accordingly)
+    document.getElementById('slip-pf-deduction').textContent = safeGet(data, 'PF on Basic (12.%)') || '0';
+    document.getElementById('slip-esi-deduction').textContent = safeGet(data, 'ESI On Gross (0.75%)') || '0';
+
+    document.getElementById('slip-netpay').textContent = safeGet(data, 7);
 }
 
-
-/**
- * Generates and downloads the PDF salary slip.
- */
 function generatePDF() {
     if (!currentEmployeeData) {
         showError('No employee data available to generate a slip.');
         return;
     }
-    
     if (typeof window.html2canvas === 'undefined' || typeof window.jspdf === 'undefined') {
-        showError('PDF libraries are not loaded. Please ensure you are connected to the internet to load CDNs.');
-        console.error("html2canvas or jspdf is undefined. Check CDN links in dashboard.html.");
+        showError('PDF libraries not loaded (html2canvas or jspdf).');
+        console.error('PDF libs missing:', window.html2canvas, window.jspdf);
         return;
     }
 
-    const month = document.getElementById('sheetName').value;
+    const month = document.getElementById('sheetName').value || 'Month';
     fillSlipTemplate(currentEmployeeData, month);
-    
+
     const slipElement = document.getElementById('slip');
+    if (!slipElement) { showError('Slip template not found'); return; }
     slipElement.classList.remove('hidden');
+    slipElement.style.display = 'block';
 
     setTimeout(() => {
-        const { jsPDF } = window.jspdf; 
+        html2canvas(slipElement, { scale: 2 }).then(canvas => {
+            try {
+                const { jsPDF } = window.jspdf || window;
+                const pdf = new jsPDF('p', 'mm', 'a4');
+                const imgData = canvas.toDataURL('image/png');
+                const pdfWidth = pdf.internal.pageSize.getWidth();
+                const imgHeight = canvas.height * pdfWidth / canvas.width;
+                pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, imgHeight);
 
-        html2canvas(slipElement, { 
-            scale: 2, 
-            logging: false 
-        }).then(canvas => {
-            const pdf = new jsPDF('p', 'mm', 'a4');
-            const imgData = canvas.toDataURL('image/png');
-            
-            const pdfWidth = pdf.internal.pageSize.getWidth();
-            const imgHeight = canvas.height * pdfWidth / canvas.width;
-            
-            pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, imgHeight);
-            
-            const empIdForFilename = currentEmployeeData[columnLabels[0]] || 'UNKNOWN'; // Use the data from Column A
-            const filename = `SalarySlip_${empIdForFilename.replace(/\s/g, '_')}_${month.replace(/\s/g, '_')}.pdf`;
-            pdf.save(filename);
-            
-            slipElement.classList.add('hidden');
+                const empIdForFilename = currentEmployeeData[columnLabels[0]] || 'UNKNOWN';
+                const filename = `SalarySlip_${String(empIdForFilename).replace(/\s/g,'_')}_${month.replace(/\s/g,'_')}.pdf`;
+                pdf.save(filename);
+            } catch (err) {
+                console.error('PDF save error:', err);
+                showError('Failed to save PDF. Check console.');
+            } finally {
+                slipElement.classList.add('hidden');
+                slipElement.style.display = 'none';
+            }
         }).catch(err => {
-            console.error("PDF generation error:", err);
-            showError("Failed to generate PDF. Check console for details.");
+            console.error('html2canvas error:', err);
+            showError('Failed to render slip to image. Check console.');
             slipElement.classList.add('hidden');
+            slipElement.style.display = 'none';
         });
-    }, 50); 
+    }, 60);
 }
+
+// initialize on DOM ready
+document.addEventListener('DOMContentLoaded', () => {
+    initDashboard();
+});
