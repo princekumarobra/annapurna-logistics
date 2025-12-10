@@ -1,70 +1,74 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Login - Annapurna Logistics</title>
-    <!-- Link to Main and Admin CSS -->
-    <link rel="stylesheet" href="../style.css">
-    <link rel="stylesheet" href="style.css">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Admin Login - Annapurna Logistics</title>
+  <link rel="stylesheet" href="../style.css" />
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
-    <!-- TOP HEADER (For consistent look) -->
-    <header class="site-header">
-        <div class="top-bar">
-            <div class="top-logo-left">
-                <img src="../logo.png" alt="Annapurna Logistics Logo" class="logo-left-img" /> 
-            </div>
-            <div class="brand">
-                <div class="brand-text">
-                    <h1 class="brand-name">ANNAPURNA LOGISTICS</h1>
-                    <p class="brand-tagline">Reliable Transport &amp; Manpower Partner</p>
-                </div>
-            </div>
-            <div class="top-contact">
-                <a href="tel:07667079711" class="top-phone blink-phone">📞 07667 079711</a>
-                <a href="tel:9122440600" class="top-phone blink-phone">📞 91224 40600</a>
-            </div>
-        </div>
-        <nav class="main-nav">
-            <ul class="nav-links">
-                <li><a href="../index.html">← Go to Home</a></li>
-            </ul>
-        </nav>
-    </header>
-
-    <div class="center-login-container">
-        <div class="card login-card">
-            <h2>Admin Login</h2>
-            <!-- FIX: autocomplete="off" added for no-save -->
-            <form id="loginForm" autocomplete="off">
-                <div class="input-group">
-                    <label for="username">Username:</label>
-                    <!-- FIX: value removed for empty input -->
-                    <input type="text" id="username" name="username" required autocomplete="off" spellcheck="false">
-                </div>
-                <div class="input-group">
-                    <label for="password">Password:</label>
-                    <!-- FIX: value removed for empty input -->
-                    <input type="password" id="password" name="password" required autocomplete="off" spellcheck="false">
-                </div>
-                <button type="submit" class="primary-button">Login</button>
-            </form>
-        </div>
+  <!-- Header -->
+  <header class="site-header admin-header">
+    <div class="brand admin-brand">
+      <img src="../assets/logo.png" alt="logo" class="site-logo" />
+      <div>
+        <h1 class="brand-title">ANNAPURNA LOGISTICS</h1>
+        <p class="brand-sub">Reliable Transport &amp; Manpower Partner</p>
+      </div>
     </div>
+    <nav class="top-nav admin-topnav">
+      <a href="../index.html">← Go to Home</a>
+    </nav>
+  </header>
 
-    <script src="main.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const loginForm = document.getElementById('loginForm');
-            if (loginForm) {
-                loginForm.addEventListener('submit', function(e) {
-                    e.preventDefault();
-                    login(); 
-                });
-            }
-        });
-    </script>
+  <!-- Login Card Center -->
+  <main class="center-login-container">
+    <div class="card login-card">
+      <h2 style="margin-bottom:8px">Admin Login</h2>
+
+      <form id="loginForm" autocomplete="off" onsubmit="return false;">
+        <div class="input-group">
+          <label for="username">Username</label>
+          <input id="username" name="username" type="text" placeholder="Enter username" autocomplete="off" required />
+        </div>
+
+        <div class="input-group">
+          <label for="password">Password</label>
+          <input id="password" name="password" type="password" placeholder="Enter password" autocomplete="off" required />
+        </div>
+
+        <button id="loginBtn" class="primary-button" type="button">Login</button>
+
+        <p style="font-size:13px;color:#666;margin-top:10px">
+          Demo credentials: <strong>admin</strong> / <strong>1234</strong>
+        </p>
+      </form>
+    </div>
+  </main>
+
+  <script>
+    // client-side simple login (hardcoded)
+    document.getElementById('loginBtn').addEventListener('click', function () {
+      const u = document.getElementById('username').value.trim();
+      const p = document.getElementById('password').value.trim();
+
+      if (u === 'admin' && p === '1234') {
+        sessionStorage.setItem('adminLoggedIn', 'true');
+        window.location.href = 'dashboard.html';
+      } else {
+        alert('Login failed: invalid username or password.');
+      }
+    });
+
+    // allow Enter to submit
+    document.getElementById('loginForm').addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        document.getElementById('loginBtn').click();
+      }
+    });
+  </script>
 </body>
 </html>
