@@ -1,0 +1,309 @@
+/* --- Global Styles & Reset --- */
+:root {
+    --primary-color: #007bff;
+    --primary-hover: #0056b3;
+    --background-color: #f4f7f6;
+    --card-background: #ffffff;
+    --border-radius: 8px;
+    --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    background-color: var(--background-color);
+    color: #333;
+    line-height: 1.6;
+}
+
+/* --- Utility Classes --- */
+.hidden {
+    display: none !important;
+}
+
+/* --- Button Styles --- */
+.primary-button, .secondary-button {
+    padding: 10px 15px;
+    border: none;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    margin-top: 15px;
+}
+
+.primary-button {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.primary-button:hover {
+    background-color: var(--primary-hover);
+}
+
+.secondary-button {
+    background-color: #6c757d;
+    color: white;
+    width: auto; 
+    margin-top: 0; /* Override default margin */
+}
+
+.secondary-button:hover {
+    background-color: #5a6268;
+}
+
+/* --- Card & Layout Styles --- */
+.card {
+    background-color: var(--card-background);
+    padding: 25px;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    margin: 20px auto; 
+    width: 100%;
+    max-width: 450px;
+}
+
+/* ================================================= */
+/* --- LOGIN PAGE & DASHBOARD PAGE CONTAINER FIX --- */
+/* ================================================= */
+
+/* Hiding the old class used for centering the card without header */
+.login-body {
+    display: block; 
+}
+
+/* New container for Login Page Card - Centers the card vertically below header */
+.center-login-container {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start; 
+    min-height: calc(100vh - 150px); /* Fill screen below header */
+    padding-top: 50px; 
+}
+
+.login-card {
+    max-width: 400px;
+    margin: 0; /* Let center-login-container handle the centering */
+}
+
+/* New container for Dashboard Cards - Must be flex column on small screens */
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center; 
+    padding: 20px 0;
+    width: 100%;
+}
+
+/* Hide the old simple blue header on dashboard */
+.header {
+    display: none !important; 
+}
+
+/* Style for the logout button on the dashboard (positioned absolutely in the top header area) */
+#logoutButton {
+    position: absolute;
+    top: 15px; 
+    right: 20px;
+    z-index: 1000;
+    padding: 5px 10px; /* Smaller button */
+    font-size: 14px;
+    border-radius: 5px;
+}
+
+/* --- Input Group & Form Styles (Same as before) --- */
+.input-group {
+    margin-bottom: 15px;
+}
+
+.input-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    font-size: 0.9rem;
+}
+
+.input-group input[type="text"],
+.input-group input[type="password"] {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 1rem;
+    transition: border-color 0.3s;
+}
+
+.input-group input:focus {
+    border-color: var(--primary-color);
+    outline: none;
+}
+
+/* --- Details Display Styles (Result Card) --- */
+#salaryDetails {
+    margin-top: 15px;
+}
+
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px dotted #e0e0e0;
+    font-size: 1.05rem;
+}
+
+.detail-row:last-of-type {
+    border-bottom: none;
+}
+
+.detail-row strong {
+    font-weight: 600;
+}
+
+.highlight {
+    font-size: 1.3rem;
+    font-weight: bold;
+    color: var(--primary-color);
+    padding-top: 15px;
+    border-top: 2px solid var(--primary-color);
+}
+
+.highlight-sub {
+    font-size: 1.15rem;
+    font-weight: bold;
+    color: #28a745; /* Green for earnings */
+}
+
+.deduction {
+    color: #dc3545; /* Red for deductions */
+}
+
+.error-message {
+    color: #dc3545;
+    font-weight: bold;
+    margin: 15px auto;
+    text-align: center;
+    max-width: 90%;
+}
+
+/* ================================================= */
+/* --- Salary Slip Template (Hidden) Styles for PDF --- */
+/* ================================================= */
+.slip-template {
+    width: 210mm; 
+    max-width: 210mm; 
+    padding: 15mm 20mm; 
+    margin: 0 auto;
+    background-color: white;
+    color: black; 
+    border: 1px solid #ccc;
+    font-family: Arial, sans-serif; 
+    font-size: 11pt; 
+    box-shadow: none; 
+}
+
+.slip-header {
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+.slip-logo {
+    max-width: 60px;
+    height: auto;
+    display: block;
+    margin: 0 auto 5px; 
+}
+
+.slip-header h1 {
+    font-size: 16pt;
+    color: #333;
+    margin-bottom: 0;
+}
+
+.slip-header h3 {
+    font-size: 11pt;
+    margin-top: 3px;
+    font-weight: normal;
+}
+
+.slip-details p {
+    margin: 4px 0;
+    display: flex;
+    justify-content: space-between;
+    font-size: 10.5pt;
+}
+
+.slip-details p strong {
+    min-width: 140px; 
+    font-weight: bold;
+}
+
+.slip-details .slip-heading {
+    text-align: center;
+    font-weight: bold;
+    margin-top: 10px;
+    color: #333;
+    border-bottom: 1px dashed #ccc;
+}
+
+.slip-details hr {
+    margin: 10px 0;
+    border: 0;
+    border-top: 1px solid #333;
+}
+
+.slip-details h2 {
+    font-size: 18pt;
+    text-align: center;
+    margin: 10px 0 20px;
+    padding: 5px;
+    border: 2px solid #333;
+    display: block;
+}
+
+.slip-footer {
+    text-align: right;
+    margin-top: 40px; 
+    font-size: 10pt;
+}
+
+.slip-footer p:first-child {
+    margin-bottom: 0;
+}
+
+
+/* --- Desktop/Tablet Layout (Responsiveness) --- */
+@media (min-width: 768px) {
+    /* Dashboard Cards Layout */
+    .container {
+        flex-direction: row;
+        justify-content: center;
+        gap: 30px;
+        align-items: flex-start;
+        width: 90%; 
+        max-width: 1000px;
+        margin: 0 auto; 
+    }
+    .search-card, .result-card {
+        margin: 20px 0; 
+        max-width: 450px;
+    }
+    
+    /* Logout button positioning fix for desktop (outside the content flow) */
+    #logoutButton {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        padding: 8px 15px; /* Adjust size for desktop */
+    }
+    
+    /* Hide the main site's responsive menu toggle on desktop */
+    .main-nav .nav-toggle {
+        display: none !important;
+    }
+}
