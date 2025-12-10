@@ -27,7 +27,7 @@ body {
 }
 
 /* --- Button Styles --- */
-.primary-button, .secondary-button {
+.primary-button {
     padding: 10px 15px;
     border: none;
     border-radius: var(--border-radius);
@@ -36,9 +36,6 @@ body {
     transition: background-color 0.3s ease;
     width: 100%;
     margin-top: 15px;
-}
-
-.primary-button {
     background-color: var(--primary-color);
     color: white;
 }
@@ -52,6 +49,12 @@ body {
     color: white;
     width: 100%; 
     margin-top: 15px; /* Separate from primary button */
+    padding: 10px 15px;
+    border: none;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
 }
 
 .secondary-button:hover {
@@ -96,15 +99,13 @@ body {
     width: 100%;
 }
 
-/* Style for the logout button (positioned absolutely in the top header area) */
+/* Style for the logout button (now placed below the container) */
 #logoutButton {
-    position: absolute;
-    top: 15px; 
-    right: 20px;
-    z-index: 1000;
-    padding: 5px 10px; /* Smaller button */
-    font-size: 14px;
-    border-radius: 5px;
+    position: relative; 
+    width: 90%; 
+    max-width: 450px; /* Same width as card */
+    margin: 0 auto 40px; /* Center it horizontally */
+    display: block; 
 }
 
 /* --- Input Group & Form Styles --- */
@@ -149,11 +150,11 @@ body {
 .highlight-sub {
     font-size: 1.15rem;
     font-weight: bold;
-    color: #28a745; /* Green for earnings */
+    color: #28a745;
 }
 
 .deduction {
-    color: #dc3545; /* Red for deductions */
+    color: #dc3545;
 }
 
 .error-message {
@@ -265,10 +266,11 @@ body {
         max-width: 450px;
     }
     
+    /* Reset Logout button for desktop */
     #logoutButton {
-        position: absolute;
-        top: 20px;
-        right: 20px;
-        padding: 8px 15px; 
+        position: relative;
+        margin: 20px auto 40px; 
+        width: 900px;
+        max-width: 1000px;
     }
 }
