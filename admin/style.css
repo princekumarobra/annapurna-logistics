@@ -1,276 +1,85 @@
-/* --- Global Styles & Reset --- */
+/* admin/style.css - improved and responsive */
+
+/* Use root colors from root style.css or set defaults here */
 :root {
-    --primary-color: #007bff;
-    --primary-hover: #0056b3;
-    --background-color: #f4f7f6;
-    --card-background: #ffffff;
-    --border-radius: 8px;
-    --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  --accent: #1177ff;
+  --bg: #f7f8fa;
+  --card: #ffffff;
+  --muted: #666;
+  --danger: #dc3545;
+  --radius: 10px;
 }
 
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-    font-family: Arial, sans-serif;
+/* basic reset for admin area */
+* { box-sizing: border-box; }
+body { font-family: "Segoe UI", Roboto, Arial, sans-serif; margin: 0; background: var(--bg); color: #222; }
+
+/* Header small admin */
+.admin-header { background: linear-gradient(90deg,#ff7a18,#af0); padding: 12px 16px; color: #fff; display:flex; align-items:center; justify-content:space-between; }
+.admin-brand { display:flex; align-items:center; gap:12px; }
+.site-logo { width:46px; height:46px; object-fit:contain; background:#fff; padding:4px; border-radius:8px; }
+.brand-title { margin:0; font-size:18px; color:#fff; }
+.brand-sub { margin:0; font-size:12px; color:#fff; opacity:0.9; }
+.admin-topnav a { color:#fff; text-decoration:none; font-weight:600; }
+
+/* Centering login */
+.center-login-container { min-height: calc(100vh - 90px); display:flex; align-items:flex-start; justify-content:center; padding-top:36px; }
+.login-card { width:100%; max-width:420px; padding:22px; border-radius:var(--radius); box-shadow:0 10px 30px rgba(0,0,0,0.06); background:var(--card); }
+
+/* form elements */
+.input-group { margin-top:12px; }
+.input-group label { display:block; font-weight:600; margin-bottom:6px; color:#333; }
+.input-group input { width:100%; padding:10px 12px; border-radius:8px; border:1px solid #dcdcdc; font-size:15px; }
+.input-group input:focus { outline:none; border-color:var(--accent); box-shadow:0 2px 8px rgba(17,119,255,0.08); }
+
+/* Buttons */
+.primary-button { background:var(--accent); color:#fff; border:none; padding:10px 14px; border-radius:8px; font-weight:700; cursor:pointer; margin-top:14px; width:100%; box-shadow:0 6px 18px rgba(17,119,255,0.12); }
+.primary-button:active { transform:translateY(1px); }
+
+/* COMMON CARD STYLE used in dashboard */
+.card { background:var(--card); border-radius:12px; padding:18px; box-shadow:0 8px 24px rgba(0,0,0,0.06); }
+
+/* Dashboard container (search + result) */
+.container { width:100%; padding:20px; display:flex; justify-content:center; }
+.dashboard-grid { width:100%; max-width:1100px; display:grid; grid-template-columns: 380px 1fr; gap:20px; align-items:start; }
+
+/* Left search card specifics */
+.search-card { padding:18px; border-radius:12px; }
+.search-card h2 { margin:0 0 8px 0; font-size:18px; }
+.search-card .input-group input { margin-bottom:8px; }
+
+/* Right result card specifics */
+.result-card { padding:18px; border-radius:12px; }
+.result-card h2 { margin-top:0; font-size:18px; }
+.detail-row { display:flex; justify-content:space-between; gap:12px; padding:10px 0; border-bottom:1px dashed #eee; font-size:14px; }
+.detail-row strong { min-width:180px; color:#333; }
+
+/* hidden helper */
+.hidden { display:none !important; }
+
+/* error message */
+.error-message { color:var(--danger); font-weight:700; margin-top:12px; }
+
+/* slip-template for PDF/print */
+.slip-template { width:210mm; max-width:800px; margin:18px auto; padding:18px; background:#fff; border:1px solid #ddd; border-radius:6px; }
+.slip-template .slip-header { text-align:center; margin-bottom:8px; }
+.slip-logo { width:72px; height:auto; display:block; margin:0 auto 6px; }
+.slip-template p { margin:6px 0; font-size:12pt; }
+
+/* small utilities */
+.primary-small { padding:8px 12px; border-radius:8px; background:var(--accent); color:#fff; border:none; cursor:pointer; }
+.secondary-button { padding:8px 12px; border-radius:8px; background:#6c757d; color:#fff; border:none; cursor:pointer; margin-left:10px; }
+
+/* Responsive adjustments */
+@media (max-width: 900px) {
+  .dashboard-grid { grid-template-columns: 1fr; padding:12px; }
+  .detail-row strong { min-width:120px; }
+  .center-login-container { padding:16px; align-items:flex-start; }
+  .site-logo { width:56px; height:56px; }
 }
 
-body {
-    background-color: var(--background-color);
-    color: #333;
-    line-height: 1.6;
-}
-
-/* --- Utility Classes --- */
-.hidden {
-    display: none !important;
-}
-
-/* --- Button Styles --- */
-.primary-button {
-    padding: 10px 15px;
-    border: none;
-    border-radius: var(--border-radius);
-    cursor: pointer;
-    font-size: 16px;
-    transition: background-color 0.3s ease;
-    width: 100%;
-    margin-top: 15px;
-    background-color: var(--primary-color);
-    color: white;
-}
-
-.primary-button:hover {
-    background-color: var(--primary-hover);
-}
-
-.secondary-button {
-    background-color: #6c757d;
-    color: white;
-    width: 100%; 
-    margin-top: 15px; /* Separate from primary button */
-    padding: 10px 15px;
-    border: none;
-    border-radius: var(--border-radius);
-    cursor: pointer;
-    font-size: 16px;
-    transition: background-color 0.3s ease;
-}
-
-.secondary-button:hover {
-    background-color: #5a6268;
-}
-
-/* --- Card & Layout Styles --- */
-.card {
-    background-color: var(--card-background);
-    padding: 25px;
-    border-radius: var(--border-radius);
-    box-shadow: var(--shadow);
-    margin: 20px auto; 
-    width: 100%;
-    max-width: 450px;
-}
-
-/* ================================================= */
-/* --- LOGIN PAGE & DASHBOARD PAGE CONTAINER FIX --- */
-/* ================================================= */
-
-/* Login Page Centering */
-.center-login-container {
-    display: flex;
-    justify-content: center;
-    align-items: flex-start; 
-    min-height: calc(100vh - 150px); 
-    padding-top: 50px; 
-}
-
-.login-card {
-    max-width: 400px;
-    margin: 0; 
-}
-
-/* Dashboard Cards Layout */
-.container {
-    display: flex;
-    flex-direction: column;
-    align-items: center; 
-    padding: 20px 0;
-    width: 100%;
-}
-
-/* Style for the logout button (now placed below the container) */
-#logoutButton {
-    position: relative; 
-    width: 90%; 
-    max-width: 450px; /* Same width as card */
-    margin: 0 auto 40px; /* Center it horizontally */
-    display: block; 
-}
-
-/* --- Input Group & Form Styles --- */
-.input-group {
-    margin-bottom: 15px;
-}
-
-.input-group label {
-    display: block;
-    margin-bottom: 5px;
-    font-weight: bold;
-    font-size: 0.9rem;
-}
-
-.input-group input[type="text"],
-.input-group input[type="password"] {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    font-size: 1rem;
-    transition: border-color 0.3s;
-}
-
-/* --- Details Display Styles (Result Card) --- */
-.detail-row {
-    display: flex;
-    justify-content: space-between;
-    padding: 8px 0;
-    border-bottom: 1px dotted #e0e0e0;
-    font-size: 1.05rem;
-}
-
-.highlight {
-    font-size: 1.3rem;
-    font-weight: bold;
-    color: var(--primary-color);
-    padding-top: 15px;
-    border-top: 2px solid var(--primary-color);
-}
-
-.highlight-sub {
-    font-size: 1.15rem;
-    font-weight: bold;
-    color: #28a745;
-}
-
-.deduction {
-    color: #dc3545;
-}
-
-.error-message {
-    color: #dc3545;
-    font-weight: bold;
-    margin: 15px auto;
-    text-align: center;
-    max-width: 90%;
-}
-
-/* ================================================= */
-/* --- Salary Slip Template (Hidden) Styles for PDF/PRINT --- */
-/* ================================================= */
-.slip-template {
-    width: 210mm; 
-    max-width: 210mm; 
-    padding: 15mm 20mm; 
-    margin: 0 auto;
-    background-color: white;
-    color: black; 
-    border: 1px solid #ccc;
-    font-family: Arial, sans-serif; 
-    font-size: 11pt; 
-    box-shadow: none; 
-}
-
-.slip-header {
-    text-align: center;
-    margin-bottom: 15px;
-}
-
-.slip-logo {
-    max-width: 60px;
-    height: auto;
-    display: block;
-    margin: 0 auto 5px; 
-}
-
-.slip-header h1 {
-    font-size: 16pt;
-    color: #333;
-    margin-bottom: 0;
-}
-
-.slip-header h3 {
-    font-size: 11pt;
-    margin-top: 3px;
-    font-weight: normal;
-}
-
-.slip-details p {
-    margin: 4px 0;
-    display: flex;
-    justify-content: space-between;
-    font-size: 10.5pt;
-}
-
-.slip-details p strong {
-    min-width: 140px; 
-    font-weight: bold;
-}
-
-.slip-details .slip-heading {
-    text-align: center;
-    font-weight: bold;
-    margin-top: 10px;
-    color: #333;
-    border-bottom: 1px dashed #ccc;
-}
-
-.slip-details h2 {
-    font-size: 18pt;
-    text-align: center;
-    margin: 10px 0 20px;
-    padding: 5px;
-    border: 2px solid #333;
-    display: block;
-}
-
-/* --- Media Query for Print (Hides non-slip elements for clean print) --- */
+/* Print hide for admin UI */
 @media print {
-    body > :not(.slip-template) {
-        display: none !important;
-    }
-    .slip-template {
-        display: block !important;
-        position: absolute;
-        left: 0;
-        top: 0;
-        margin: 0;
-        border: none;
-        box-shadow: none;
-    }
-}
-
-/* --- Desktop/Tablet Layout (Responsiveness) --- */
-@media (min-width: 768px) {
-    .container {
-        flex-direction: row;
-        justify-content: center;
-        gap: 30px;
-        align-items: flex-start;
-        width: 90%; 
-        max-width: 1000px;
-        margin: 0 auto; 
-    }
-    .search-card, .result-card {
-        margin: 20px 0; 
-        max-width: 450px;
-    }
-    
-    /* Reset Logout button for desktop */
-    #logoutButton {
-        position: relative;
-        margin: 20px auto 40px; 
-        width: 900px;
-        max-width: 1000px;
-    }
+  body > :not(.slip-template) { display:none !important; }
+  .slip-template { display:block !important; margin:0; padding:6mm; border:none; box-shadow:none; }
 }
