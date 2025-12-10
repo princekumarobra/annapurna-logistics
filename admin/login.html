@@ -4,104 +4,30 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Login - Annapurna Logistics</title>
-    <!-- Note: We are linking to the main style.css one level up (../style.css) -->
-    <link rel="stylesheet" href="../style.css"> 
-    <!-- ALSO link to the admin style.css for login/dashboard card styling -->
     <link rel="stylesheet" href="style.css">
 </head>
-<body>
-
-    <!-- ======================================= -->
-    <!-- ========== TOP HEADER (Copied from index.html) ========== -->
-    <!-- ** NOTE: Links here point to the main site (e.g., about.html, not ../about.html) ** -->
-    <header class="site-header">
-        
-        <!-- COLORED TOP BAR -->
-        <div class="top-bar">
-            <!-- LEFT: LOGO -->
-            <div class="top-logo-left">
-                <!-- Logo path updated to go up one level: ../logo.png -->
-                <img src="../logo.png" alt="Annapurna Logistics Logo" class="logo-left-img" /> 
+<body class="login-body">
+    <div class="card login-card">
+        <h2>Admin Login</h2>
+        <form id="loginForm">
+            <div class="input-group">
+                <label for="username">Username:</label>
+                <input type="text" id="username" name="username" required>
             </div>
-            
-            <!-- CENTER: BRAND TEXT -->
-            <div class="brand">
-                <div class="brand-text">
-                    <h1 class="brand-name">ANNAPURNA LOGISTICS</h1>
-                    <p class="brand-tagline">Reliable Transport &amp; Manpower Partner</p>
-                </div>
+            <div class="input-group">
+                <label for="password">Password:</label>
+                <input type="password" id="password" name="password" required>
             </div>
-            
-            <!-- RIGHT: PHONE NUMBERS -->
-            <div class="top-contact">
-                <a href="tel:07667079711" class="top-phone blink-phone">
-                    📞 07667 079711
-                </a>
-                <a href="tel:9122440600" class="top-phone blink-phone">
-                    📞 91224 40600
-                </a>
-            </div>
-        </div>
-        
-        <!-- WHITE NAV BAR - ADMIN PAGE DOES NOT NEED FULL NAVIGATION. Keeping it simple. -->
-        <nav class="main-nav">
-            <ul class="nav-links">
-                <!-- Adding a simple back link to Home -->
-                <li><a href="../index.html">← Go to Home</a></li>
-            </ul>
-        </nav>
-        
-    </header>
-    <!-- ======================================= -->
-
-    <!-- Login Card is now inside a centered div, without the 'login-body' class -->
-    <div class="center-login-container">
-        <div class="card login-card">
-            <h2>Admin Login</h2>
-            <!-- FIX: Added autocomplete="off" to prevent browser from saving credentials -->
-            <form id="loginForm" autocomplete="off">
-                <div class="input-group">
-                    <label for="username">Username:</label>
-                    <input type="text" id="username" name="username" required autocomplete="off" spellcheck="false">
-                </div>
-                <div class="input-group">
-                    <label for="password">Password:</label>
-                    <input type="password" id="password" name="password" required autocomplete="off" spellcheck="false">
-                </div>
-                <button type="submit" class="primary-button">Login</button>
-            </form>
-        </div>
+            <button type="submit" class="primary-button">Login</button>
+        </form>
     </div>
-    
-    <!-- FOOTER - OPTIONAL: Can be added if needed, but keeping it light -->
 
-
-    <!-- main.js जिसमें login() फ़ंक्शन है -->
     <script src="main.js"></script>
     <script>
-        // DOMContentLoaded का उपयोग करके सुनिश्चित करें कि फ़ॉर्म लोड होने के बाद ही लिसनर लगे
-        document.addEventListener('DOMContentLoaded', function() {
-            const loginForm = document.getElementById('loginForm');
-            if (loginForm) {
-                loginForm.addEventListener('submit', function(e) {
-                    e.preventDefault();
-                    login(); // main.js से login फ़ंक्शन कॉल करें
-                });
-            }
-        });
-    </script>
-    
-    <!-- Hamburger Menu Script (Copied from index.html) -->
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            const toggle = document.querySelector(".nav-toggle");
-            const nav = document.querySelector(".main-nav");
-
-            if (toggle && nav) {
-                toggle.addEventListener("click", function () {
-                    nav.classList.toggle("open");
-                });
-            }
+        // Attach the login function from main.js to the form submission
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            login();
         });
     </script>
 </body>
