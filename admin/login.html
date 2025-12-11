@@ -1,74 +1,38 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Admin Login - Annapurna Logistics</title>
-  <link rel="stylesheet" href="../style.css" />
-  <link rel="stylesheet" href="style.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Annapurna Logistics - Admin Login</title>
+    <!-- Use the updated style.css -->
+    <link rel="stylesheet" href="style.css"> 
 </head>
-<body>
-
-  <!-- Header -->
-  <header class="site-header admin-header">
-    <div class="brand admin-brand">
-      <img src="../assets/logo.png" alt="logo" class="site-logo" />
-      <div>
-        <h1 class="brand-title">ANNAPURNA LOGISTICS</h1>
-        <p class="brand-sub">Reliable Transport &amp; Manpower Partner</p>
-      </div>
-    </div>
-    <nav class="top-nav admin-topnav">
-      <a href="../index.html">← Go to Home</a>
-    </nav>
-  </header>
-
-  <!-- Login Card Center -->
-  <main class="center-login-container">
-    <div class="card login-card">
-      <h2 style="margin-bottom:8px">Admin Login</h2>
-
-      <form id="loginForm" autocomplete="off" onsubmit="return false;">
-        <div class="input-group">
-          <label for="username">Username</label>
-          <input id="username" name="username" type="text" placeholder="Enter username" autocomplete="off" required />
+<body class="login-body">
+    <div class="center-login-container">
+        <div class="card login-card">
+            <h1>Annapurna Logistics</h1>
+            <h2>Admin Dashboard Login</h2>
+            <form id="loginForm" autocomplete="off" spellcheck="false">
+                <div class="input-group">
+                    <label for="username">Username:</label>
+                    <!-- autocomplete="off" prevents browser saving/pre-filling -->
+                    <input id="username" name="username" type="text" required autocomplete="off" spellcheck="false" />
+                </div>
+                <div class="input-group">
+                    <label for="password">Password:</label>
+                    <!-- autocomplete="new-password" suggests not saving the password -->
+                    <input id="password" name="password" type="password" required autocomplete="new-password" spellcheck="false" />
+                </div>
+                <p id="loginMessage" class="error-message"></p>
+                <button id="loginBtn" class="primary-button" type="submit">Login</button>
+            </form>
+            <p style="margin-top:10px;font-size:12px;color:#666;">
+                Credentials: shivam / shivam@12345. Login state uses sessionStorage.
+            </p>
         </div>
-
-        <div class="input-group">
-          <label for="password">Password</label>
-          <input id="password" name="password" type="password" placeholder="Enter password" autocomplete="off" required />
-        </div>
-
-        <button id="loginBtn" class="primary-button" type="button">Login</button>
-
-        <p style="font-size:13px;color:#666;margin-top:10px">
-          Demo credentials: <strong>admin</strong> / <strong>1234</strong>
-        </p>
-      </form>
     </div>
-  </main>
 
-  <script>
-    // client-side simple login (hardcoded)
-    document.getElementById('loginBtn').addEventListener('click', function () {
-      const u = document.getElementById('username').value.trim();
-      const p = document.getElementById('password').value.trim();
-
-      if (u === 'admin' && p === '1234') {
-        sessionStorage.setItem('adminLoggedIn', 'true');
-        window.location.href = 'dashboard.html';
-      } else {
-        alert('Login failed: invalid username or password.');
-      }
-    });
-
-    // allow Enter to submit
-    document.getElementById('loginForm').addEventListener('keydown', function (e) {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        document.getElementById('loginBtn').click();
-      }
-    });
-  </script>
+    <!-- main.js contains the login logic and initialization -->
+    <script src="main.js"></script>
 </body>
 </html>
