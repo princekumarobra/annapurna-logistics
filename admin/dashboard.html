@@ -1,191 +1,118 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Admin Dashboard - Salary Slip</title>
-
-  <!-- Main site CSS (root) -->
-  <link rel="stylesheet" href="../style.css" />
-  <!-- Admin specific styles (replace with your admin/style.css) -->
-  <link rel="stylesheet" href="style.css" />
-
-  <!-- PDF libs -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-
-  <style>
-    /* small override to ensure two-column layout on desktop */
-    .content-section { padding: 18px 20px; max-width:1200px; margin: 0 auto; }
-    .title-small { font-size:16px; color:#333; margin-bottom:8px; }
-    /* make result column scrollable for long lists */
-    #salaryDetails { max-height: 72vh; overflow:auto; padding-right:8px; }
-    /* keep logout small and at top-right */
-    #topLogout { position: absolute; right:18px; top:18px; background:#fff; border-radius:8px; padding:6px 10px; box-shadow:0 6px 18px rgba(0,0,0,.08); }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Annapurna Logistics - Salary Slip Generator</title>
+    <!-- Use the updated style.css -->
+    <link rel="stylesheet" href="style.css">
+    <!-- CDNs for PDF generation (html2canvas and jspdf) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
 </head>
 <body>
-
-  <!-- === Header / Site banner === -->
-  <header class="site-header" style="position:relative;">
-    <div class="top-bar" style="display:flex;align-items:center;justify-content:space-between;padding:12px 18px;">
-      <div style="display:flex;align-items:center;gap:12px;">
-        <img src="../logo.png" alt="logo" style="width:56px;height:56px;border-radius:8px;background:#fff;padding:6px;">
-        <div>
-          <h1 style="margin:0;font-size:20px;color:#fff">ANNAPURNA LOGISTICS</h1>
-          <div style="font-size:12px;color:#fff;opacity:.95">Reliable Transport &amp; Manpower Partner</div>
+    <!-- Header Banner: Prominent Name, Contact Info -->
+    <header class="main-header">
+        <div class="header-content">
+            <h1 class="company-title">ANNAPURNA LOGISTICS</h1>
+            <div class="contact-info">
+                <p>Call: <strong>+91 98765 43210 / 91224 40600</strong></p>
+                <p>Website: <strong>annapurnalogistics.site</strong></p>
+            </div>
         </div>
-      </div>
+        <button id="logoutButton" class="secondary-button">Logout</button>
+    </header>
 
-      <div style="display:flex;gap:10px;align-items:center;">
-        <a href="tel:07667079711" style="color:#fff;text-decoration:none;font-weight:700">📞 07667 079711</a>
-        <a href="tel:9122440600" style="color:#fff;text-decoration:none;font-weight:700">📞 91224 40600</a>
-      </div>
-
-      <button id="topLogout" class="secondary-button" style="display:none;">Logout</button>
-    </div>
-    <nav class="main-nav" style="background:transparent;padding:6px 18px;">
-      <ul class="nav-links" style="list-style:none;display:flex;gap:16px;margin:0;padding:0;color:#fff">
-        <li><a href="../index.html" style="color:#fff;text-decoration:none">Home</a></li>
-        <li><a href="../index.html#about" style="color:#fff;text-decoration:none">About</a></li>
-        <li><a href="../index.html#contact" style="color:#fff;text-decoration:none">Contact</a></li>
-        <li><a href="login.html" style="color:#fff;text-decoration:none">Admin Login</a></li>
-      </ul>
-    </nav>
-  </header>
-
-  <!-- Main content -->
-  <div class="content-section">
-    <div class="title-small">Salary Slip Generator</div>
-
-    <!-- Dashboard grid (left search, middle result, right notes) -->
-    <div class="dashboard-grid">
-
-      <!-- LEFT: Search Card -->
-      <div class="card search-card">
-        <h2>Admin Panel → Employee Salary Lookup</h2>
-
-        <div class="input-group">
-          <label for="sheetId">Google Sheet ID (readonly)</label>
-          <input id="sheetId" type="text" value="1jCx_xflDltZB2YPWddp3nW0ZKIkrupr0hqXkuDo41lU" readonly>
+    <main class="container">
+        <!-- 1. Left: Search Card -->
+        <div class="card search-card">
+            <h3>Search Employee Salary</h3>
+            <div class="input-group">
+                <label for="sheetId">Google Sheet ID:</label>
+                <!-- Example ID for testing -->
+                <input type="text" id="sheetId" value="1jCx_xflDltZB2YPWddp3nW0ZKIkrupr0hqXkuDo41lU" required>
+            </div>
+            <div class="input-group">
+                <label for="sheetName">Sheet Name (e.g., May):</label>
+                <input type="text" id="sheetName" value="May" required>
+            </div>
+            <div class="input-group">
+                <label for="employeeId">Employee ID (e.g., JJT15):</label>
+                <input type="text" id="employeeId" required>
+            </div>
+            <p id="errorMessage" class="error-message"></p>
+            <button id="searchButton" class="primary-button">Search Employee</button>
         </div>
 
-        <div class="input-group">
-          <label for="sheetName">Sheet Name (Month)</label>
-          <input id="sheetName" type="text" value="May" placeholder="e.g., October 2025">
+        <!-- 2. Middle: Salary Details Preview Card -->
+        <div class="card result-card" id="resultCard">
+            <h3>Salary Details (Preview)</h3>
+            <p id="initial-message" style="font-size:0.9rem;color:#666;margin-bottom:10px;">
+                Enter search parameters and click 'Search Employee'.
+            </p>
+            <div id="salaryDetails">
+                <!-- The parsed salary data table will be inserted here with readable labels -->
+            </div>
+            
+            <div style="display:flex;gap:10px;margin-top:20px;">
+                <button id="downloadPdfButton" class="primary-button" disabled>Download Salary Slip PDF</button>
+                <button id="printSlipButton" class="secondary-button" disabled>Print Salary Slip</button>
+            </div>
         </div>
 
-        <div class="input-group">
-          <label for="employeeId">Employee ID (e.g., JJT15)</label>
-          <input id="employeeId" type="text" placeholder="Enter Emp ID">
+        <!-- 3. Right: Notes / Help Card -->
+        <div class="card help-card">
+            <h4>Notes / Help</h4>
+            <ul>
+                <li>Sheet ID is the unique part of the Google Sheet URL.</li>
+                <li>**CRUCIAL:** Ensure the Google Sheet is published to the web (File &gt; Share &gt; Publish to web) for the data link to work.</li>
+                <li>Sheet Name must match the tab name exactly (case-sensitive).</li>
+                <li>The system auto-detects Employee ID column by checking for 'emp', 'id', 'employee', or 'eid' in headers.</li>
+            </ul>
         </div>
+    </main>
 
-        <button id="searchButton" class="primary-button">Search Employee</button>
+    <!-- Hidden Salary Slip Template (A4/Letter-like for PDF/Print) -->
+    <div id="slip" class="salary-slip-template">
+        <div class="slip-content">
+            <div class="slip-header">
+                <h1 class="slip-company-title">ANNAPURNA LOGISTICS</h1>
+                <!-- UPDATED ADDRESS HERE -->
+                <p class="slip-address">
+                    Head Office: Seriakella, P.O. Seriakella, 833219 (Jharkhand)<br>
+                    <strong>Contact:</strong> +91 98765 43210 | <strong>Website:</strong> annapurnalogistics.site
+                </p>
+                <div class="slip-title-bar">
+                    <h3>PAYSLIP FOR THE MONTH OF <span id="slip-month">____</span></h3>
+                </div>
+            </div>
 
-        <p style="margin-top:8px;font-size:12px;color:#666">
-          Notes: Sheet must be shared as <strong>Anyone with the link → Viewer</strong>.
-          Column order flexible but search checks Column A for Emp ID (best to keep Emp ID in A).
-        </p>
-      </div>
+            <table class="slip-details-table">
+                <tbody>
+                    <tr><td class="label" style="width:25%;">Employee ID:</td><td id="slip-empid"></td><td class="label" style="width:25%;">Name:</td><td id="slip-name"></td></tr>
+                    <tr><td class="label">Bank Account:</td><td id="slip-bank"></td><td class="label">UAN Number:</td><td id="slip-uan"></td></tr>
+                    <tr style="background:#f0f0f0;"><td class="label">Rate Per Day:</td><td id="slip-rate"></td><td class="label">Present Days:</td><td id="slip-present"></td></tr>
+                    <tr style="background:#f0f0f0;"><td class="label">Absent Days:</td><td id="slip-absent"></td><td class="label">Gross Salary (₹):</td><td id="slip-gross-pay" style="font-weight:bold;color:#007bff;"></td></tr>
+                    <tr><td class="label deduction-label">PF Deduction (₹):</td><td id="slip-pf-deduction" class="deduction-value"></td><td class="label deduction-label">ESI Deduction (₹):</td><td id="slip-esi-deduction" class="deduction-value"></td></tr>
+                    <tr class="net-pay-row"><td class="label net-pay">Net Pay (₹):</td><td id="slip-netpay" colspan="3" style="font-size:1.2rem;text-align:center;"></td></tr>
+                </tbody>
+            </table>
 
-      <!-- MIDDLE: Result Card -->
-      <div class="card result-card" id="resultCard" style="display:block;">
-        <h2>Salary Details (Preview)</h2>
-        <div style="font-size:13px;color:#666;margin-bottom:8px">Full Row Data (for verification)</div>
-
-        <div id="salaryDetails">
-          <!-- dynamic details filled by main.js -->
-          <p style="color:#666">No search yet. Enter Employee ID and press <strong>Search Employee</strong>.</p>
+            <div class="slip-footer-section">
+                <div class="signature-area">
+                    <p>_________________________</p>
+                    <p>Employee Signature</p>
+                </div>
+                <div class="signature-area">
+                    <p>_________________________</p>
+                    <p>Authorised Signature / Seal</p>
+                </div>
+            </div>
+            <p class="slip-footer-text">** This is a computer generated salary slip and does not require a physical signature. **</p>
         </div>
-
-        <div style="margin-top:12px; display:flex; gap:8px;">
-          <button id="downloadPdfButton" class="primary-small">Download Salary Slip PDF</button>
-          <button id="printSlipButton" class="secondary-button">Print Salary Slip</button>
-          <button id="logoutButton" class="secondary-button" style="margin-left:auto">Logout</button>
-        </div>
-
-        <p id="errorMessage" class="error-message"></p>
-      </div>
-
-      <!-- RIGHT: Notes/Place for future -->
-      <div class="card" style="min-height:220px;">
-        <h3>Notes</h3>
-        <ul style="color:#444;line-height:1.6">
-          <li>Use Admin Login to access this dashboard (credentials in login.html).</li>
-          <li>Search checks Column A (Emp ID). If your sheet layout differs, move Emp ID to A for reliable search.</li>
-          <li>PDF will include company header &amp; contact information.</li>
-        </ul>
-      </div>
-
-    </div> <!-- dashboard-grid -->
-  </div> <!-- content-section -->
-
-  <!-- Hidden Salary Slip Template (for pdf/print) -->
-  <div id="slip" class="slip-template hidden" style="max-width:700px;">
-    <div class="slip-header">
-      <img src="../logo.png" alt="logo" class="slip-logo">
-      <h2 style="margin:6px 0 0 0;">Annapurna Logistics</h2>
-      <div style="font-size:12px;color:#333;margin-bottom:8px">Reliable Transport &amp; Manpower Partner</div>
-      <div style="font-size:11px;color:#333;margin-bottom:4px">Contact: 07667 079711 | 91224 40600</div>
-      <div style="font-size:10px;color:#333;margin-bottom:6px">Website: annapurnalogistics.site</div>
-      <hr style="border:none;border-top:1px solid #ddd;margin:10px 0">
-      <h4 style="margin:6px 0">Salary Slip for <span id="slip-month"></span></h4>
     </div>
 
-    <div class="slip-details" style="font-size:12px;color:#222;">
-      <p><strong>Employee ID:</strong> <span id="slip-empid"></span></p>
-      <p><strong>Employee Name:</strong> <span id="slip-name"></span></p>
-      <p><strong>Bank Account:</strong> <span id="slip-bank"></span></p>
-      <hr>
-
-      <p style="text-align:center;font-weight:700">** EARNINGS **</p>
-      <p><strong>Rate Per Day:</strong> <span id="slip-rate"></span></p>
-      <p><strong>Present Days:</strong> <span id="slip-present"></span></p>
-      <p><strong>Absent Days:</strong> <span id="slip-absent"></span></p>
-      <p><strong>GROSS PAY:</strong> ₹ <span id="slip-gross-pay"></span></p>
-      <hr>
-
-      <p style="text-align:center;font-weight:700">** DEDUCTIONS **</p>
-      <p><strong>PF (12%):</strong> ₹ <span id="slip-pf-deduction"></span></p>
-      <p><strong>ESI (0.75%):</strong> ₹ <span id="slip-esi-deduction"></span></p>
-      <hr>
-
-      <h3 style="text-align:center">NET PAY: ₹ <span id="slip-netpay"></span></h3>
-    </div>
-
-    <div class="slip-footer" style="margin-top:18px;">
-      <div style="width:60%;display:inline-block;vertical-align:top">
-        <p>________________________</p>
-        <p>Authorized Signature</p>
-      </div>
-      <div style="width:40%;display:inline-block;text-align:right;font-size:11px;color:#666">
-        <p style="margin:0">Annapurna Logistics</p>
-        <p style="margin:0">annapurnalogistics.site</p>
-      </div>
-    </div>
-  </div>
-
-  <!-- your existing JS (main.js) which contains search + PDF logic -->
-  <script src="main.js"></script>
-
-  <script>
-    // small init guard: show/hide top logout and attach to same logout button
-    document.addEventListener('DOMContentLoaded', function () {
-      const topLogout = document.getElementById('topLogout');
-      const logoutBtn = document.getElementById('logoutButton');
-      // show small top logout if admin logged in
-      if (sessionStorage.getItem('adminLoggedIn') === 'true') {
-        topLogout.style.display = 'inline-block';
-      }
-      topLogout.addEventListener('click', function(){ sessionStorage.removeItem('adminLoggedIn'); window.location.href='login.html'; });
-      logoutBtn.addEventListener('click', function(){ sessionStorage.removeItem('adminLoggedIn'); window.location.href='login.html'; });
-
-      // ensure resultCard element exists for main.js
-      const rc = document.getElementById('resultCard');
-      if (!rc) {
-        console.warn('resultCard not found - check dashboard.html');
-      }
-    });
-  </script>
+    <!-- main.js contains the search, PDF, and print logic -->
+    <script src="main.js"></script>
 </body>
 </html>
